@@ -31,10 +31,15 @@ use schema stage_sch;
 create file format if not exists stage_sch.csv_file_format
     type = 'csv'
     compression = 'auto'
-    field_delimiter = '\n'
+    field_delimiter = ','
+    record_delimiter = '\n'
     skip_header = 1
     field_optionally_enclosed_by = '\042'
-    null_if = ('\\n');
+    null_if = ('\\N');
+
+
+--- Drop the file format
+DROP FILE FORMAT IF EXISTS stage_sch.csv_file_format;
 
 
 -- Create internal stage for file loading
