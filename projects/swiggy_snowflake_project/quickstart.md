@@ -15,7 +15,7 @@
 - A star schema typically consists of a central fact table surrounded by multiple dimension tables.
 - Fact tables derive from transactional data, while dimension tables originated from master data.
 - Copy commands in Snowflake transfers files (CSV or JSON) from a stage location into Snowflake tables.
-- 
+
 
 ## Articles:
 
