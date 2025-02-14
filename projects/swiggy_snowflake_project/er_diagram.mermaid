@@ -1,0 +1,90 @@
+erDiagram
+    User ||--o{ Order : places
+    User {
+        int user_id PK
+        string name
+        string email
+        string phone
+        string address
+        datetime created_at
+    }
+
+    Restaurant ||--o{ MenuItem : offers
+    Restaurant ||--o{ Order : receives
+    Restaurant {
+        int restaurant_id PK
+        string name
+        string address
+        string phone
+        float rating
+        string cuisine_type
+        boolean is_active
+        time operating_hours
+    }
+
+    MenuItem ||--o{ OrderItem : contains
+    MenuItem {
+        int item_id PK
+        int restaurant_id FK
+        string name
+        float price
+        string description
+        string category
+        boolean is_veg
+        boolean is_available
+    }
+
+    Order ||--o{ OrderItem : includes
+    Order {
+        int order_id PK
+        int user_id FK
+        int restaurant_id FK
+        int delivery_partner_id FK
+        datetime order_time
+        float total_amount
+        string payment_method
+        string status
+        string delivery_address
+    }
+
+    OrderItem {
+        int order_item_id PK
+        int order_id FK
+        int item_id FK
+        int quantity
+        float item_price
+        string special_instructions
+    }
+
+    DeliveryPartner ||--o{ Order : delivers
+    DeliveryPartner {
+        int partner_id PK
+        string name
+        string phone
+        boolean is_active
+        string vehicle_type
+        string current_location
+        float rating
+    }
+
+    Payment ||--|| Order : processes
+    Payment {
+        int payment_id PK
+        int order_id FK
+        float amount
+        string status
+        string payment_method
+        datetime payment_time
+        string transaction_id
+    }
+
+    Review }o--|| Order : receives
+    Review {
+        int review_id PK
+        int order_id FK
+        int user_id FK
+        int restaurant_id FK
+        float rating
+        string comment
+        datetime review_time
+    }
