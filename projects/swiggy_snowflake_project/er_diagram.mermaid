@@ -1,0 +1,127 @@
+erDiagram
+    location {
+        serial4 locationid PK
+        varchar100 city
+        varchar100 state
+        varchar10 zipcode
+        varchar10 activeflag
+        timestamptz createdate
+        timestamptz modifieddate
+    }
+
+    customeraddressbook {
+        serial4 addressid PK
+        int4 customerid FK
+        varchar10 flatno
+        varchar10 houseno
+        varchar10 floor
+        varchar100 building
+        varchar100 landmark
+        text coordinates
+        varchar10 primaryflag
+        varchar20 addresstype
+        timestamptz createdate
+        timestamptz modifieddate
+        varchar50 locality
+        varchar50 city
+        varchar50 state
+        int4 pincode
+    }
+
+    customer {
+        serial4 customerid PK
+        varchar100 name
+        varchar10 mobile
+        varchar100 email
+        varchar20 loginbyusing
+        varchar10 gender
+        date dob
+        date anniversary
+        jsonb preferences
+        timestamptz createdate
+        timestamptz modifieddate
+    }
+
+    loginaudit {
+        serial4 loginid PK
+        int4 customerid FK
+        varchar20 logintype
+        varchar20 deviceinterface
+        varchar50 mobiledevicename
+        varchar50 webinterface
+        timestamptz lastlogin
+    }
+
+    deliveryagent {
+        serial4 deliveryagentid PK
+        varchar100 name
+        varchar15 phone
+        varchar50 vehicletype
+        int4 locationid FK
+        varchar10 status
+        numeric21 rating
+        timestamptz createdate
+        timestamptz modifieddate
+        varchar50 gender
+    }
+
+    delivery {
+        serial4 deliveryid PK
+        int4 orderid FK
+        int4 deliveryagentid FK
+        varchar15 deliverystatus
+        interval estimatedtime
+        timestamptz deliverydate
+        timestamptz createdate
+        timestamptz modifieddate
+        int4 deliveryaddress
+    }
+
+    orders {
+        serial4 orderid PK
+        int4 customerid FK
+        int4 restaurantid FK
+        timestamptz orderdate
+        numeric102 totalamount
+        varchar15 status
+        varchar15 paymentmethod
+        timestamptz createdate
+        timestamptz modifieddate
+    }
+
+    restaurant {
+        serial4 restaurantid PK
+        varchar100 name
+        text cuisinetype
+        numeric102 pricing_for_2
+        varchar15 restaurant_phone
+        varchar100 operatinghours
+    }
+
+    menu {
+        serial4 menuid PK
+        int4 restaurantid FK
+        varchar100 itemname
+        text description
+    }
+
+    orderitem {
+        serial4 orderitemid PK
+        int4 orderid FK
+        int4 menuid FK
+        int4 quantity
+        numeric102 price
+        numeric102 subtotal
+    }
+
+    location ||--o{ deliveryagent : "locationid"
+    location ||--o{ restaurant : "locationid"
+    customer ||--o{ customeraddressbook : "customerid"
+    customer ||--o{ loginaudit : "customerid"
+    customer ||--o{ orders : "customerid"
+    restaurant ||--o{ menu : "restaurantid"
+    restaurant ||--o{ orders : "restaurantid"
+    orders ||--|| delivery : "orderid"
+    orders ||--o{ orderitem : "orderid"
+    menu ||--o{ orderitem : "menuid"
+    deliveryagent ||--o{ delivery : "deliveryagentid"
