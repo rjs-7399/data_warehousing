@@ -1,90 +1,127 @@
 erDiagram
-    User ||--o{ Order : places
-    User {
-        int user_id PK
-        string name
-        string email
-        string phone
-        string address
-        datetime created_at
+    location {
+        serial4 locationid PK
+        varchar100 city
+        varchar100 state
+        varchar10 zipcode
+        varchar10 activeflag
+        timestamptz createdate
+        timestamptz modifieddate
     }
 
-    Restaurant ||--o{ MenuItem : offers
-    Restaurant ||--o{ Order : receives
-    Restaurant {
-        int restaurant_id PK
-        string name
-        string address
-        string phone
-        float rating
-        string cuisine_type
-        boolean is_active
-        time operating_hours
+    customeraddressbook {
+        serial4 addressid PK
+        int4 customerid FK
+        varchar10 flatno
+        varchar10 houseno
+        varchar10 floor
+        varchar100 building
+        varchar100 landmark
+        text coordinates
+        varchar10 primaryflag
+        varchar20 addresstype
+        timestamptz createdate
+        timestamptz modifieddate
+        varchar50 locality
+        varchar50 city
+        varchar50 state
+        int4 pincode
     }
 
-    MenuItem ||--o{ OrderItem : contains
-    MenuItem {
-        int item_id PK
-        int restaurant_id FK
-        string name
-        float price
-        string description
-        string category
-        boolean is_veg
-        boolean is_available
+    customer {
+        serial4 customerid PK
+        varchar100 name
+        varchar10 mobile
+        varchar100 email
+        varchar20 loginbyusing
+        varchar10 gender
+        date dob
+        date anniversary
+        jsonb preferences
+        timestamptz createdate
+        timestamptz modifieddate
     }
 
-    Order ||--o{ OrderItem : includes
-    Order {
-        int order_id PK
-        int user_id FK
-        int restaurant_id FK
-        int delivery_partner_id FK
-        datetime order_time
-        float total_amount
-        string payment_method
-        string status
-        string delivery_address
+    loginaudit {
+        serial4 loginid PK
+        int4 customerid FK
+        varchar20 logintype
+        varchar20 deviceinterface
+        varchar50 mobiledevicename
+        varchar50 webinterface
+        timestamptz lastlogin
     }
 
-    OrderItem {
-        int order_item_id PK
-        int order_id FK
-        int item_id FK
-        int quantity
-        float item_price
-        string special_instructions
+    deliveryagent {
+        serial4 deliveryagentid PK
+        varchar100 name
+        varchar15 phone
+        varchar50 vehicletype
+        int4 locationid FK
+        varchar10 status
+        numeric21 rating
+        timestamptz createdate
+        timestamptz modifieddate
+        varchar50 gender
     }
 
-    DeliveryPartner ||--o{ Order : delivers
-    DeliveryPartner {
-        int partner_id PK
-        string name
-        string phone
-        boolean is_active
-        string vehicle_type
-        string current_location
-        float rating
+    delivery {
+        serial4 deliveryid PK
+        int4 orderid FK
+        int4 deliveryagentid FK
+        varchar15 deliverystatus
+        interval estimatedtime
+        timestamptz deliverydate
+        timestamptz createdate
+        timestamptz modifieddate
+        int4 deliveryaddress
     }
 
-    Payment ||--|| Order : processes
-    Payment {
-        int payment_id PK
-        int order_id FK
-        float amount
-        string status
-        string payment_method
-        datetime payment_time
-        string transaction_id
+    orders {
+        serial4 orderid PK
+        int4 customerid FK
+        int4 restaurantid FK
+        timestamptz orderdate
+        numeric102 totalamount
+        varchar15 status
+        varchar15 paymentmethod
+        timestamptz createdate
+        timestamptz modifieddate
     }
 
-    Review }o--|| Order : receives
-    Review {
-        int review_id PK
-        int order_id FK
-        int user_id FK
-        int restaurant_id FK
-        float rating
-        string comment
-        datetime review_time
+    restaurant {
+        serial4 restaurantid PK
+        varchar100 name
+        text cuisinetype
+        numeric102 pricing_for_2
+        varchar15 restaurant_phone
+        varchar100 operatinghours
     }
+
+    menu {
+        serial4 menuid PK
+        int4 restaurantid FK
+        varchar100 itemname
+        text description
+    }
+
+    orderitem {
+        serial4 orderitemid PK
+        int4 orderid FK
+        int4 menuid FK
+        int4 quantity
+        numeric102 price
+        numeric102 subtotal
+    }
+
+    location ||--o{ deliveryagent : "locationid"
+    location ||--o{ restaurant : "locationid"
+    customer ||--o{ customeraddressbook : "customerid"
+    customer ||--o{ loginaudit : "customerid"
+    customer ||--o{ orders : "customerid"
+    restaurant ||--o{ menu : "restaurantid"
+    restaurant ||--o{ orders : "restaurantid"
+    orders ||--|| delivery : "orderid"
+    orders ||--o{ orderitem : "orderid"
+    menu ||--o{ orderitem : "menuid"
+    deliveryagent ||--o{ delivery : "deliveryagentid"
