@@ -1,17 +1,16 @@
 # Swiggy Data Warehouse Implementation
 
-## Overview
 
 This project implements a comprehensive data warehouse solution for Swiggy's food delivery platform using Snowflake. The implementation follows a multi-layered architecture designed to transform operational data into an analytics-ready format that supports business intelligence, reporting, and data science initiatives.
 The data warehouse integrates data from multiple source systems into a cohesive dimensional model, enabling cross-functional analysis of customer behavior, restaurant performance, delivery operations, and revenue metrics. By implementing slowly changing dimensions (SCD Type 2) for key entities, the system preserves historical accuracy while maintaining current views of the business.
 The solution includes:
 
-A three-tiered data architecture (Stage, Clean, Consumption layers)
-Automated data transformation processes
-Dimensional modeling with fact and dimension tables
-Pre-built KPI views for common business metrics
-An interactive Streamlit dashboard for business users
-The fundamental purpose behind creating this project is to showcase to our business team how we can design a modern data warehouse with effective data modeling. For this implementation, I've chosen Snowflake as the primary platform.
+- A three-tiered data architecture (Stage, Clean, Consumption layers)
+- Automated data transformation processes
+- Dimensional modeling with fact and dimension tables
+- Pre-built KPI views for common business metrics
+- An interactive Streamlit dashboard for business users
+- The fundamental purpose behind creating this project is to showcase to our business team how we can design a modern data warehouse with effective data modeling. For this implementation, I've chosen Snowflake as the primary platform.
 
 ## Why Snowflake?
 
