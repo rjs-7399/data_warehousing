@@ -27,6 +27,8 @@ The solution includes:
 - [System Architecture](#system-architecture)
 - [Data Warehouse and Data Modeling](#data-warehouse-and-data-modeling)
 - [OLTP vs OLAP](#oltp-vs-olap)
+- [Source System ER Diagram](#source-system-er-diagram)
+- [Data Warehouse Model](#data-warehouse-model)
 - [Entities](#entities)
   - [Restaurant](#restaurant)
   - [Location](#location)
@@ -72,6 +74,280 @@ A data warehouse is a centralized repository designed for analytical processing 
 - **Dimension Tables**: Restaurant, Location, Menu, Customer, Address, Delivery Agent, Date
 
 This model optimizes for query performance, business understandability, and analytical flexibility. We've implemented SCD Type 2 for dimensions to track historical changes, which is essential for accurate point-in-time reporting.
+
+## Source System ER Diagram
+
+```mermaid
+erDiagram
+    location {
+        serial4 locationid PK
+        varchar100 city
+        varchar100 state
+        varchar10 zipcode
+        varchar10 activeflag
+        timestamptz createdate
+        timestamptz modifieddate
+    }
+
+    customeraddressbook {
+        serial4 addressid PK
+        int4 customerid FK
+        varchar10 flatno
+        varchar10 houseno
+        varchar10 floor
+        varchar100 building
+        varchar100 landmark
+        text coordinates
+        varchar10 primaryflag
+        varchar20 addresstype
+        timestamptz createdate
+        timestamptz modifieddate
+        varchar50 locality
+        varchar50 city
+        varchar50 state
+        int4 pincode
+    }
+
+    customer {
+        serial4 customerid PK
+        varchar100 name
+        varchar10 mobile
+        varchar100 email
+        varchar20 loginbyusing
+        varchar10 gender
+        date dob
+        date anniversary
+        jsonb preferences
+        timestamptz createdate
+        timestamptz modifieddate
+    }
+
+    loginaudit {
+        serial4 loginid PK
+        int4 customerid FK
+        varchar20 logintype
+        varchar20 deviceinterface
+        varchar50 mobiledevicename
+        varchar50 webinterface
+        timestamptz lastlogin
+    }
+
+    deliveryagent {
+        serial4 deliveryagentid PK
+        varchar100 name
+        varchar15 phone
+        varchar50 vehicletype
+        int4 locationid FK
+        varchar10 status
+        numeric21 rating
+        timestamptz createdate
+        timestamptz modifieddate
+        varchar50 gender
+    }
+
+    delivery {
+        serial4 deliveryid PK
+        int4 orderid FK
+        int4 deliveryagentid FK
+        varchar15 deliverystatus
+        interval estimatedtime
+        timestamptz deliverydate
+        timestamptz createdate
+        timestamptz modifieddate
+        int4 deliveryaddress
+    }
+
+    orders {
+        serial4 orderid PK
+        int4 customerid FK
+        int4 restaurantid FK
+        timestamptz orderdate
+        numeric102 totalamount
+        varchar15 status
+        varchar15 paymentmethod
+        timestamptz createdate
+        timestamptz modifieddate
+    }
+
+    restaurant {
+        serial4 restaurantid PK
+        varchar100 name
+        text cuisinetype
+        numeric102 pricing_for_2
+        varchar15 restaurant_phone
+        varchar100 operatinghours
+    }
+
+    menu {
+        serial4 menuid PK
+        int4 restaurantid FK
+        varchar100 itemname
+        text description
+    }
+
+    orderitem {
+        serial4 orderitemid PK
+        int4 orderid FK
+        int4 menuid FK
+        int4 quantity
+        numeric102 price
+        numeric102 subtotal
+    }
+
+    location ||--o{ deliveryagent : "locationid"
+    location ||--o{ restaurant : "locationid"
+    customer ||--o{ customeraddressbook : "customerid"
+    customer ||--o{ loginaudit : "customerid"
+    customer ||--o{ orders : "customerid"
+    restaurant ||--o{ menu : "restaurantid"
+    restaurant ||--o{ orders : "restaurantid"
+    orders ||--|| delivery : "orderid"
+    orders ||--o{ orderitem : "orderid"
+    menu ||--o{ orderitem : "menuid"
+    deliveryagent ||--o{ delivery : "deliveryagentid"
+```
+
+## Data Warehouse Model
+
+```mermaid
+erDiagram
+    ORDER_ITEM_FACT {
+        bigint ORDER_ITEM_FACT_SK PK
+        bigint ORDER_ITEM_ID
+        bigint ORDER_ID
+        bigint CUSTOMER_DIM_KEY FK
+        bigint CUSTOMER_ADDRESS_DIM_KEY FK
+        bigint RESTAURANT_DIM_KEY FK
+        bigint RESTAURANT_LOCATION_DIM_KEY FK
+        bigint MENU_DIM_KEY FK
+        bigint DELIVERY_AGENT_DIM_KEY FK
+        bigint ORDER_DATE_DIM_KEY FK
+        int QUANTITY
+        decimal PRICE
+        decimal SUBTOTAL
+        varchar DELIVERY_STATUS
+        timestamp ESTIMATED_TIME
+    }
+
+    CUSTOMER_DIM {
+        bigint CUSTOMER_HK PK
+        varchar CUSTOMER_ID
+        varchar NAME
+        varchar MOBILE
+        varchar EMAIL
+        varchar LOGIN_BY_USING
+        varchar GENDER
+        date DOB
+        date ANNIVERSARY
+        jsonb PREFERENCES
+        date EFF_START_DATE
+        date EFF_END_DATE
+        boolean IS_CURRENT
+    }
+
+    CUSTOMER_ADDRESS_DIM {
+        bigint CUSTOMER_ADDRESS_HK PK
+        varchar ADDRESS_ID
+        varchar CUSTOMER_ID_FK
+        varchar FLAT_NO
+        varchar HOUSE_NO
+        varchar FLOOR
+        varchar BUILDING
+        varchar LANDMARK
+        varchar LOCALITY
+        varchar CITY
+        varchar STATE
+        varchar PINCODE
+        point COORDINATES
+        boolean PRIMARY_FLAG
+        varchar ADDRESS_TYPE
+        date EFF_START_DATE
+        date EFF_END_DATE
+        boolean IS_CURRENT
+    }
+
+    DATE_DIM {
+        bigint DATE_DIM_HK PK
+        date CALENDAR_DATE
+        int YEAR
+        int QUARTER
+        int MONTH
+        int WEEK
+        int DAY_OF_YEAR
+        int DAY_OF_WEEK
+        int DAY_OF_THE_MOTH
+        varchar DAY_NAME
+    }
+
+    DELIVERY_AGENT_DIM {
+        bigint DELIVERY_AGENT_HK PK
+        varchar DELIVERY_AGENT_ID
+        varchar NAME
+        varchar PHONE
+        varchar VEHICLE_TYPE
+        varchar LOCATION_ID_FK
+        varchar STATUS
+        varchar GENDER
+        decimal RATING
+        date EFF_START_DATE
+        date EFF_END_DATE
+        boolean IS_CURRENT
+    }
+
+    RESTAURANT_LOCATION_DIM {
+        bigint RESTAURANT_LOCATION_HK PK
+        varchar LOCATION_ID
+        varchar CITY
+        varchar STATE
+        varchar STATE_CODE
+        boolean IS_UNION_TERRITORY
+        boolean CAPITAL_CITY_FLAG
+        varchar CITY_TIER
+        varchar ZIP_CODE
+        boolean ACTIVE_FLAG
+        date EFF_START_DATE
+        date EFF_END_DATE
+        boolean CURRENT_FLAG
+    }
+
+    RESTAURANT_DIM {
+        bigint RESTAURANT_HK PK
+        varchar RESTAURANT_ID
+        varchar NAME
+        varchar CUSINE_TYPE
+        decimal PRICING_FOR_TWO
+        varchar RESTAURANT_PHONE
+        varchar OPERATING_HOURS
+        varchar LOCATION_ID_FK
+        boolean ACTIVE_FLAG
+        varchar OPEN_STATUS
+        varchar LOCALITY
+        text RESTAURANT_ADDRESS
+    }
+
+    MENU_DIM {
+        bigint MENU_DIM_HK PK
+        varchar MENU_ID
+        varchar RESTAURANT_ID_FK
+        varchar ITEM_NAME
+        text DESCRIPTION
+        decimal PRICE
+        varchar CATEGORY
+        boolean AVAILABILITY
+        varchar ITEM_TYPE
+        date EFF_START_DATE
+        date EFF_END_DATE
+        boolean IS_CURRENT
+    }
+
+    CUSTOMER_DIM ||--o{ ORDER_ITEM_FACT : references
+    CUSTOMER_ADDRESS_DIM ||--o{ ORDER_ITEM_FACT : references
+    DATE_DIM ||--o{ ORDER_ITEM_FACT : references
+    DELIVERY_AGENT_DIM ||--o{ ORDER_ITEM_FACT : references
+    RESTAURANT_LOCATION_DIM ||--o{ ORDER_ITEM_FACT : references
+    RESTAURANT_DIM ||--o{ ORDER_ITEM_FACT : references
+    MENU_DIM ||--o{ ORDER_ITEM_FACT : references
+```
 
 ## OLTP vs OLAP
 
