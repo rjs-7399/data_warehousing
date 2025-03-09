@@ -27,6 +27,8 @@ The solution includes:
 - [System Architecture](#system-architecture)
 - [Data Warehouse and Data Modeling](#data-warehouse-and-data-modeling)
 - [OLTP vs OLAP](#oltp-vs-olap)
+- [Source System ER Diagram](#source-system-er-diagram)
+- [Data Warehouse Model](#data-warehouse-model)
 - [Entities](#entities)
   - [Restaurant](#restaurant)
   - [Location](#location)
